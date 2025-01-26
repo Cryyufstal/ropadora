@@ -5,7 +5,7 @@ import ReferralSystem from '@/components/ReferralSystem';
 import { useEffect, useState } from 'react';
 
 export default function Home() {
-  const [initData, setInitData] = useState('');
+  const [initData, setInitData] = useState(''); 
   const [userId, setUserId] = useState('');
   const [startParam, setStartParam] = useState('');
   const [userData, setUserData] = useState(null);
@@ -57,9 +57,7 @@ export default function Home() {
           <ReferralSystem 
             initData={initData} 
             userId={userId} 
-            startParam={startParam} 
-            userData={userData} 
-          />
+            startParam={startParam}           />
         ) : (
           <p>Loading user data...</p>
         )}
