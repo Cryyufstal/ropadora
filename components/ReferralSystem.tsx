@@ -1,5 +1,11 @@
 import React, { useState, useEffect } from 'react';
 
+interface Task {
+  id: string;
+  description: string;
+  completed: boolean;
+}
+
 interface ReferralSystemProps {
   initData: string;
   userId: string;
@@ -13,7 +19,7 @@ export default function ReferralSystem({
   startParam,
   userData,
 }: ReferralSystemProps) {
-  const [tasks, setTasks] = useState([]);
+  const [tasks, setTasks] = useState<Task[]>([]);
 
   useEffect(() => {
     const fetchTasks = async () => {
@@ -30,7 +36,7 @@ export default function ReferralSystem({
   }, [userId]);
 
   const addTask = async () => {
-    const newTask = { id: 'task3', description: 'Complete a survey', completed: false };
+    const newTask: Task = { id: 'task3', description: 'Complete a survey', completed: false };
     try {
       const res = await fetch(`/api/users/${userId}/tasks`, {
         method: 'POST',
