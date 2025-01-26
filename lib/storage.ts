@@ -33,7 +33,7 @@ export async function getReferrals(userId: string): Promise<string[]> {
 
 export async function getReferrer(userId: string): Promise<string | null> {
   // استرجاع المحيل
-  const referral = await prisma.referral.findUnique({
+  const referral = await prisma.referral.findFirst({
     where: { referredId: userId },
     select: { userId: true },
   });
