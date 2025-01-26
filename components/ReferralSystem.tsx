@@ -1,10 +1,19 @@
-import { useEffect, useState } from 'react';
+interface ReferralSystemProps {
+  initData: string;
+  userId: string;
+  startParam: string;
+  userData: any;
+}
 
-export default function ReferralSystem({ userId }: { userId: string }) {
+export default function ReferralSystem({
+  initData,
+  userId,
+  startParam,
+  userData,
+}: ReferralSystemProps) {
   const [tasks, setTasks] = useState([]);
 
   useEffect(() => {
-    // استرداد المهام عند التحميل
     const fetchTasks = async () => {
       try {
         const res = await fetch(`/api/users/${userId}/tasks`);
@@ -50,6 +59,12 @@ export default function ReferralSystem({ userId }: { userId: string }) {
       >
         Add Task
       </button>
+      <div className="mt-4">
+        <h3 className="text-lg font-semibold">Debug Info</h3>
+        <p><strong>Init Data:</strong> {initData}</p>
+        <p><strong>Start Param:</strong> {startParam}</p>
+        <p><strong>User Data:</strong> {JSON.stringify(userData)}</p>
+      </div>
     </div>
   );
 }
