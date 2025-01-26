@@ -1,70 +1,42 @@
-"use client";
+import { useState } from "react";
 
-import BottomNavigation from '@/components/BottomNavigation';
-import ReferralSystem from '@/components/ReferralSystem';
-import { useEffect, useState } from 'react';
+interface Referral {
+  id: string;
+  userId: string;
+  referredId: string;
+  status: string;
+  createdAt: string;
+}
 
-export default function Home() {
-  const [initData, setInitData] = useState(''); 
-  const [userId, setUserId] = useState('');
-  const [startParam, setStartParam] = useState('');
-  const [userData, setUserData] = useState(null);
+export default function ReferralPage() {
+  const [referrals, setReferrals] = useState<Referral[]>([]);
+  const [userId, setUserId] = useState<string>("");
 
-  useEffect(() => {
-    const initWebApp = async () => {
-      if (typeof window !== 'undefined') {
-        const WebApp = (await import('@twa-dev/sdk')).default;
-        WebApp.ready();
-        setInitData(WebApp.initData);
-        setUserId(WebApp.initDataUnsafe.user?.id.toString() || '');
-        setStartParam(WebApp.initDataUnsafe.start_param || '');
-      }
-    };
-
-    initWebApp();
-  }, []);
-
-  useEffect(() => {
-    const fetchUserData = async () => {
-      if (userId) {
-        try {
-          const response = await fetch(`/api/users/${userId}`);
-          if (response.ok) {
-            const data = await response.json();
-            setUserData(data);
-          } else {
-            console.error('Failed to fetch user data');
-          }
-        } catch (error) {
-          console.error('Error fetching user data:', error);
-        }
-      }
-    };
-
-    fetchUserData();
-  }, [userId]);
+  const fetchReferrals = async () => {
+    const response = await fetch(`/api/referrals/${userId}`);
+    const data: Referral[] = await response.json();
+    setReferrals(data);
+  };
 
   return (
-    <main className="flex min-h-screen flex-col items-center justify-center bg-gray-900 p-6 text-white">
-      <div className="bg-gray-800 shadow-lg rounded-2xl w-full max-w-3xl p-6 text-center">
-        <h1 className="text-4xl font-bold mb-6 text-blue-400">
-          Telegram Referral 
-        </h1>
-        <p className="text-gray-300 text-lg mb-8">
-          Welcome to the referral system. Connect with your audience and share referral links seamlessly!
-        </p>
-        {userData ? (
-          <ReferralSystem 
-            initData={initData} 
-            userId={userId} 
-            startParam={startParam} 
-            userData={userData} 
-          />
-        ) : (
-          <p>Loading user data...</p>
-        )}
-      </div>
-      <BottomNavigation />
-    </main>
+    <div>
+      <h1>Referral System</h1>
+      <input
+        type="text"
+        placeholder="Enter your user ID"
+        value={userId}
+        onChange={(e) => setUserId(e.target.value)}
+      />
+      <button onClick={fetchReferrals}>Fetch Referrals</button>
+
+      <ul>
+        {referrals.map((referral) => (
+          <li key={referral.id}>
+            Referred User ID: {referral.referredId} | Status: {referral.status}
+          </li>
+        ))}
+      </ul>
+    </div>
   );
 }
+
