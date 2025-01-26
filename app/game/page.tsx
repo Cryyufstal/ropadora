@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 interface Referral {
   id: string;
@@ -11,16 +11,37 @@ interface Referral {
 
 export default function ReferralPage() {
   const [referrals, setReferrals] = useState<Referral[]>([]);
-  const [userId, setUserId] = useState<string>("");
+  const [telegramId, setTelegramId] = useState<string | null>(null);
 
+  // جلب telegramId تلقائيًا من الـ API عند تحميل الصفحة
+  useEffect(() => {
+    const fetchTelegramId = async () => {
+      try {
+        const response = await fetch("/api/user"); // استعلام الـ API للحصول على telegramId
+        const data = await response.json();
+        setTelegramId(data.telegramId); // تخزين telegramId في الحالة
+      } catch (error) {
+        console.error("Failed to fetch Telegram ID", error);
+      }
+    };
+
+    fetchTelegramId();
+  }, []);
+
+  // بناء رابط الإحالة باستخدام telegramId
+  const referralLink = telegramId
+    ? `https://t.me/foragge_bot/force_gge/start?startapp=${telegramId}`
+    : "";
+
+  // جلب الإحالات
   const fetchReferrals = async () => {
-    if (!userId) {
-      alert("Please enter your User ID.");
+    if (!telegramId) {
+      alert("Telegram ID is missing.");
       return;
     }
 
     try {
-      const response = await fetch(`/api/referrals/${userId}`);
+      const response = await fetch(`/api/referrals/${telegramId}`);
       if (!response.ok) throw new Error("Failed to fetch referrals.");
       const data: Referral[] = await response.json();
       setReferrals(data);
@@ -30,38 +51,12 @@ export default function ReferralPage() {
     }
   };
 
-  const referralLink = `t.me/foragge_bot/force_gge${userId}`;
-
   return (
     <div style={{ padding: "20px", fontFamily: "Arial, sans-serif" }}>
       <h1>Referral System</h1>
 
-      {/* إدخال معرف المستخدم */}
-      <div style={{ marginBottom: "20px" }}>
-        <input
-          type="text"
-          placeholder="Enter your User ID"
-          value={userId}
-          onChange={(e) => setUserId(e.target.value)}
-          style={{ padding: "10px", marginRight: "10px", width: "300px" }}
-        />
-        <button
-          onClick={fetchReferrals}
-          style={{
-            padding: "10px 20px",
-            backgroundColor: "#007bff",
-            color: "white",
-            border: "none",
-            borderRadius: "5px",
-            cursor: "pointer",
-          }}
-        >
-          Fetch Referrals
-        </button>
-      </div>
-
       {/* رابط الإحالة */}
-      {userId && (
+      {telegramId && (
         <div style={{ marginBottom: "20px" }}>
           <h2>Your Referral Link:</h2>
           <p
@@ -72,10 +67,34 @@ export default function ReferralPage() {
               fontSize: "16px",
             }}
           >
-            <a href={`https://${referralLink}`} target="_blank" rel="noopener noreferrer">
+            <a
+              href={referralLink}
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{ color: "#007bff" }}
+            >
               {referralLink}
             </a>
           </p>
+        </div>
+      )}
+
+      {/* زر جلب الإحالات */}
+      {telegramId && (
+        <div style={{ marginBottom: "20px" }}>
+          <button
+            onClick={fetchReferrals}
+            style={{
+              padding: "10px 20px",
+              backgroundColor: "#007bff",
+              color: "white",
+              border: "none",
+              borderRadius: "5px",
+              cursor: "pointer",
+            }}
+          >
+            Fetch Referrals
+          </button>
         </div>
       )}
 
