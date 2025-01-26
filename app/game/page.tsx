@@ -57,7 +57,9 @@ export default function Home() {
           <ReferralSystem 
             initData={initData} 
             userId={userId} 
-            startParam={startParam}           />
+            startParam={startParam} 
+            userData={userData} 
+          />
         ) : (
           <p>Loading user data...</p>
         )}
