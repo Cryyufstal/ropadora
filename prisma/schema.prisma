@@ -1,4 +1,3 @@
-
 datasource db {
   provider = "mongodb"
   url      = env("DATABASE_URL")
@@ -9,15 +8,19 @@ generator client {
 }
 
 model User {
-  id         String   @id @default(auto()) @map("_id") @db.ObjectId
-  telegramId Int      @unique
-  username   String?
-  firstName  String?
-  lastName   String?
-  points     Int      @default(0)
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
+  id              String   @id @default(auto()) @map("_id") @db.ObjectId
+  telegramId      Int      @unique
+  username        String?
+  firstName       String?
+  lastName        String?
+  points          Int      @default(0)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  referredById    String?  @db.ObjectId // معرّف المحيل
+  referredBy      User?    @relation("Referrals", fields: [referredById], references: [id], onDelete: NoAction, onUpdate: NoAction) // المستخدم المحيل
+  referrals       User[]   @relation("Referrals") // المستخدمون المُحالون
 }
+
 
 model Task {
   id        String   @id @default(auto()) @map("_id") @db.ObjectId
@@ -28,10 +31,4 @@ model Task {
   updatedAt DateTime @updatedAt
 }
 
-model Referral {
-  id          String   @id @default(auto()) @map("_id") @db.ObjectId
-  userId      String   // معرف المستخدم الذي قام بالإحالة
-  referredId  String   // معرف المستخدم المُحال
-  status      String   @default("pending") // يمكن أن تكون "pending" أو "approved"
-  createdAt   DateTime @default(now())
-}
+
