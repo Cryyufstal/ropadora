@@ -9,6 +9,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Invalid user data' }, { status: 400 });
     }
 
+    // التحقق إذا كان المستخدم موجودًا
     let user = await prisma.user.findUnique({
       where: { telegramId: userData.id },
     });
@@ -21,19 +22,20 @@ export async function POST(req: NextRequest) {
           username: userData.username || '',
           firstName: userData.first_name || '',
           lastName: userData.last_name || '',
+          // إضافة المحيل إذا كان موجودًا
+          referrerId: userData.referrerId || null,
         },
       });
+    }
 
-      // إذا كان هناك referrerId في البيانات، أضف المستخدم إلى جدول الإحالات
-      if (userData.referrerId) {
-        await prisma.referral.create({
-          data: {
-            userId: userData.referrerId, // معرف المستخدم الذي قام بالإحالة
-            referredId: user.id,         // معرف المستخدم المُحال
-            status: 'pending',
-          },
-        });
-      }
+    // إذا كان هناك referrerId في البيانات، قم بتحديث المستخدم الذي أشار إليه
+    if (userData.referrerId) {
+      await prisma.user.update({
+        where: { id: user.id },
+        data: {
+          referredById: userData.referrerId,  // تحديد الذي أشار إليه
+        },
+      });
     }
 
     return NextResponse.json(user);
