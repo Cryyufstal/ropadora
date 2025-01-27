@@ -15,8 +15,10 @@ export default function Home() {
   const [user, setUser] = useState<any>(null);
   const [error, setError] = useState<string | null>(null);
   const [points, setPoints] = useState<number>(0);
+  const [referrerId, setReferrerId] = useState<string | null>(null); // لتخزين معرّف المحيل
 
   useEffect(() => {
+    // فحص إذا كان التطبيق يعمل داخل Telegram
     if (typeof window !== 'undefined' && window.Telegram?.WebApp) {
       const tg = window.Telegram.WebApp;
       tg.ready();
@@ -24,6 +26,29 @@ export default function Home() {
       const initDataUnsafe = tg.initDataUnsafe || {};
 
       if (initDataUnsafe.user) {
+        // استخراج معرّف الإحالة من رابط URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const startapp = urlParams.get('startapp');
+
+        if (startapp) {
+          setReferrerId(startapp);
+
+          // تسجيل الإحالة في الخادم
+          fetch('/api/referrals', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              referrerId: startapp,
+              userId: initDataUnsafe.user.id,
+            }),
+          }).catch(err => {
+            console.error('Error saving referral:', err);
+          });
+        }
+
+        // تحميل بيانات المستخدم
         fetch('/api/user', {
           method: 'POST',
           headers: {
@@ -95,6 +120,13 @@ export default function Home() {
           <p className="text-lg text-gray-300 mt-2"><span className="text-green-400 font-bold">{points}</span>$MY</p>
         </div>
 
+        {/* عرض معلومات الإحالة */}
+        {referrerId && (
+          <div className="bg-green-700 text-white p-4 rounded mb-4 text-center">
+            You were referred by user <strong>{referrerId}</strong>.
+          </div>
+        )}
+
         {/* بطاقة النقاط */}
         <div className="bg-gray-800 rounded-xl p-6 shadow-lg text-center border border-gray-700">
           <p className="text-xl font-medium text-gray-300 mb-4">Click the image below to earn points!</p>
@@ -112,4 +144,3 @@ export default function Home() {
     </div>
   );
 }
-
