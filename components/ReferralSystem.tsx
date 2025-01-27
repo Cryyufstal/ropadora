@@ -1,6 +1,5 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect } from "react"
 
-import { initUtils } from '@telegram-apps/sdk'
 interface ReferralSystemProps {
   initData: string
   userId: string
@@ -8,54 +7,57 @@ interface ReferralSystemProps {
 }
 
 const ReferralSystem: React.FC<ReferralSystemProps> = ({ initData, userId, startParam }) => {
-  const [referrals, setReferrals] = useState<string[]>([])
+  const [referrals, setReferrals] = useState<any[]>([]) // تحديث نوع الإحالات ليكون متوافقاً مع البيانات في قاعدة البيانات
   const [referrer, setReferrer] = useState<string | null>(null)
   const INVITE_URL = "https://t.me/foragge_bot/force_gge/start?startapp="
 
   useEffect(() => {
+    // فحص الإحالة
     const checkReferral = async () => {
       if (startParam && userId) {
         try {
           const response = await fetch('/api/referrals', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ userId, referrerId: startParam }),
-          });
-          if (!response.ok) throw new Error('Failed to save referral');
+            body: JSON.stringify({ userId, referrerId: startParam }), // إرسال بيانات الإحالة إلى السيرفر
+          })
+          if (!response.ok) throw new Error('Failed to save referral')
         } catch (error) {
-          console.error('Error saving referral:', error);
+          console.error('Error saving referral:', error)
         }
       }
     }
 
+    // جلب الإحالات
     const fetchReferrals = async () => {
       if (userId) {
         try {
-          const response = await fetch(`/api/referrals?userId=${userId}`);
-          if (!response.ok) throw new Error('Failed to fetch referrals');
-          const data = await response.json();
-          setReferrals(data.referrals);
-          setReferrer(data.referrer);
+          const response = await fetch(`/api/referrals?userId=${userId}`)
+          if (!response.ok) throw new Error('Failed to fetch referrals')
+          const data = await response.json()
+          setReferrals(data.referrals)
+          setReferrer(data.referrer) // جلب المعرف المحيل (referrer)
         } catch (error) {
-          console.error('Error fetching referrals:', error);
+          console.error('Error fetching referrals:', error)
         }
       }
     }
 
-    checkReferral();
-    fetchReferrals();
+    checkReferral()
+    fetchReferrals()
   }, [userId, startParam])
 
+  // وظيفة لفتح رابط الدعوة عبر تلغرام
   const handleInviteFriend = () => {
-    const utils = initUtils()
-    const inviteLink = `${INVITE_URL}?startapp=${userId}`
+    const inviteLink = `${INVITE_URL}${userId}`
     const shareText = `Join me on this awesome Telegram mini app!`
     const fullUrl = `https://t.me/share/url?url=${encodeURIComponent(inviteLink)}&text=${encodeURIComponent(shareText)}`
-    utils.openTelegramLink(fullUrl)
+    window.open(fullUrl, "_blank") // فتح رابط في نافذة جديدة
   }
 
+  // وظيفة لنسخ رابط الدعوة
   const handleCopyLink = () => {
-    const inviteLink = `${INVITE_URL}?startapp=${userId}`
+    const inviteLink = `${INVITE_URL}${userId}`
     navigator.clipboard.writeText(inviteLink)
     alert('Invite link copied to clipboard!')
   }
@@ -83,9 +85,9 @@ const ReferralSystem: React.FC<ReferralSystemProps> = ({ initData, userId, start
         <div className="mt-8">
           <h2 className="text-2xl font-bold mb-4">Your Referrals</h2>
           <ul>
-            {referrals.map((referral, index) => (
-              <li key={index} className="bg-gray-100 p-2 mb-2 rounded">
-                User {referral}
+            {referrals.map((referral) => (
+              <li key={referral.id} className="bg-gray-100 p-2 mb-2 rounded">
+                <strong>User:</strong> {referral.referredId} | <strong>Status:</strong> {referral.status}
               </li>
             ))}
           </ul>
